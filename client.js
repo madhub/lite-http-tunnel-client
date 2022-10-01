@@ -23,8 +23,11 @@ function initClient(options) {
     path: '/$web_tunnel',
     transports: ["websocket"],
     auth: {
-      token: options.jwtToken,
+      token: options.apitoken,
     },
+    query: {
+      "appName": options.profile
+    }
   };
   const http_proxy = process.env.https_proxy || process.env.http_proxy;
   if (http_proxy) {
@@ -147,19 +150,20 @@ program
       console.log('Please set remote tunnel server firstly');
       return;
     }
-    if (!config.jwtToken) {
-      console.log(`Please set jwt token for ${config.server} firstly`);
+    if (!config.apitoken) {
+      console.log(`Please set API Key token for ${config.server} firstly`);
       return;
     }
+    options.cientAppName = options.profile;
     options.port = port;
-    options.jwtToken = config.jwtToken;
+    options.apitoken = config.apitoken;
     options.server = config.server;
     initClient(options);
   });
 
 program
   .command('config')
-  .addArgument(new Argument('<type>', 'config type').choices(['jwt', 'server']))
+  .addArgument(new Argument('<type>', 'config type').choices(['apitoken', 'server']))
   .argument('<value>', 'config value')
   .option('-p --profile <string>', 'setting profile name', 'default')
   .action((type, value, options) => {
@@ -172,8 +176,8 @@ program
     if (fs.existsSync(configFilePath)) {
       config = JSON.parse(fs.readFileSync(configFilePath, 'utf8'));
     }
-    if (type === 'jwt') {
-      config.jwtToken = value;
+    if (type === 'apitoken') {
+      config.apitoken = value;
     }
     if (type === 'server') {
       config.server = value;
